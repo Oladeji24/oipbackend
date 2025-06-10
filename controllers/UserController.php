@@ -39,4 +39,20 @@ class UserController extends Controller
         $user->save();
         return response()->json(['success' => true, 'message' => 'User status updated']);
     }
+
+    // Update user profile (email, password)
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
+        $data = $request->validate([
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'password' => 'nullable|min:6',
+        ]);
+        $user->email = $data['email'];
+        if (!empty($data['password'])) {
+            $user->password = bcrypt($data['password']);
+        }
+        $user->save();
+        return response()->json(['email' => $user->email]);
+    }
 }

@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+Route::middleware('auth:sanctum')->patch('/user/profile', [App\Http\Controllers\UserController::class, 'updateProfile']);
 
 // Kraken (Crypto)
 Route::get('/kraken/balance', [App\Http\Controllers\KrakenController::class, 'balance']);
