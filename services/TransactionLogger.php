@@ -31,4 +31,12 @@ class TransactionLogger {
             'timestamp' => now(),
         ]);
     }
+
+    // Log a bot action (for analytics)
+    public function logBotAction($userId, $market, $symbol, $action, $order = null) {
+        // TODO: Persist to DB or file for analytics
+        // Example: file_put_contents or DB insert
+        // file_put_contents(storage_path('logs/bot_actions.log'), json_encode([...]) . "\n", FILE_APPEND);
+        // Log order/trade details if provided
+    }
 }

@@ -38,4 +38,61 @@ class TransactionController extends Controller
         $this->logger->logTransaction($userId, $type, $amount, $currency, $status, $details);
         return response()->json(['success' => true]);
     }
+
+    // Get user trade analytics (P&L, volume, win/loss, time series, by market, filter by market)
+    public function analytics(Request $request)
+    {
+        $userId = $request->user()->id ?? 1;
+        $marketFilter = $request->query('market');
+        $query = \DB::table('transactions')
+            ->where('user_id', $userId)
+            ->where('type', 'trade');
+        if ($marketFilter) {
+            $query->where('market', $marketFilter);
+        }
+        $trades = $query->orderBy('created_at')->get();
+        $pnl = 0;
+        $volume = 0;
+        $win = 0;
+        $loss = 0;
+        $byMarket = [];
+        $pnlSeries = [];
+        $volumeSeries = [];
+        $winLossSeries = [];
+        foreach ($trades as $trade) {
+            $pnl += $trade->profit ?? 0;
+            $volume += $trade->amount;
+            if (($trade->profit ?? 0) > 0) $win++;
+            if (($trade->profit ?? 0) < 0) $loss++;
+            $market = $trade->market ?? 'unknown';
+            if (!isset($byMarket[$market])) $byMarket[$market] = ['pnl' => 0, 'volume' => 0, 'count' => 0];
+            $byMarket[$market]['pnl'] += $trade->profit ?? 0;
+            $byMarket[$market]['volume'] += $trade->amount;
+            $byMarket[$market]['count']++;
+            $pnlSeries[] = [
+                'time' => $trade->created_at,
+                'pnl' => $trade->profit ?? 0
+            ];
+            $volumeSeries[] = [
+                'time' => $trade->created_at,
+                'volume' => $trade->amount
+            ];
+            $winLossSeries[] = [
+                'time' => $trade->created_at,
+                'result' => ($trade->profit ?? 0) > 0 ? 'win' : (($trade->profit ?? 0) < 0 ? 'loss' : 'even')
+            ];
+        }
+        return response()->json([
+            'pnl' => $pnl,
+            'volume' => $volume,
+            'win' => $win,
+            'loss' => $loss,
+            'total' => $trades->count(),
+            'byMarket' => $byMarket,
+            'pnlSeries' => $pnlSeries,
+            'volumeSeries' => $volumeSeries,
+            'winLossSeries' => $winLossSeries,
+            'trades' => $trades,
+        ]);
+    }
 }
