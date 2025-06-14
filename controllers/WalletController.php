@@ -43,11 +43,13 @@ class WalletController extends Controller
     // Deposit (forwards to payment API)
     public function deposit(Request $request)
     {
-        $userId = $request->user()->id ?? 1;
-        $amount = $request->input('amount');
-        $currency = $request->input('currency');
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:100',
+            'currency' => 'required|string|in:NGN,USD',
+        ]);
+        $userId = $request->user()->id;
         // Placeholder: Integrate with Paystack/PayPal
-        $this->logger->logTransaction($userId, 'deposit', $amount, $currency, 'pending');
+        $this->logger->logTransaction($userId, 'deposit', $validated['amount'], $validated['currency'], 'pending');
         return response()->json(['success' => true, 'message' => 'Deposit initiated.']);
     }
 

@@ -18,10 +18,12 @@ class BotController extends Controller
 
     public function start(Request $request)
     {
-        $userId = $request->user()->id ?? 1; // Placeholder for user auth
-        $market = $request->input('market');
-        $symbol = $request->input('symbol');
-        $result = $this->bot->startBot($userId, $market, $symbol);
+        $validated = $request->validate([
+            'market' => 'required|string|in:crypto,forex',
+            'symbol' => 'required|string',
+        ]);
+        $userId = $request->user()->id;
+        $result = $this->bot->startBot($userId, $validated['market'], $validated['symbol']);
         return response()->json($result);
     }
 
@@ -51,9 +53,21 @@ class BotController extends Controller
     // Allow user to update bot parameters (EMA/RSI periods, risk)
     public function updateParams(Request $request)
     {
-        $userId = $request->user()->id ?? 1;
-        $params = $request->only(['strategy', 'emaFast', 'emaSlow', 'rsiPeriod', 'macdFast', 'macdSlow', 'macdSignal', 'riskLevel', 'tripleFast', 'tripleMid', 'tripleSlow']);
-        $result = $this->bot->updateBotParams($userId, $params);
+        $validated = $request->validate([
+            'strategy' => 'required|string',
+            'emaFast' => 'nullable|integer|min:2|max:50',
+            'emaSlow' => 'nullable|integer|min:2|max:100',
+            'rsiPeriod' => 'nullable|integer|min:2|max:50',
+            'macdFast' => 'nullable|integer|min:2|max:50',
+            'macdSlow' => 'nullable|integer|min:2|max:50',
+            'macdSignal' => 'nullable|integer|min:1|max:50',
+            'riskLevel' => 'nullable|integer|min:1|max:5',
+            'tripleFast' => 'nullable|integer|min:2|max:49',
+            'tripleMid' => 'nullable|integer|min:3|max:99',
+            'tripleSlow' => 'nullable|integer|min:16|max:200',
+        ]);
+        $userId = $request->user()->id;
+        $result = $this->bot->updateBotParams($userId, $validated);
         return response()->json($result);
     }
 

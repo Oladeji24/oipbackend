@@ -29,13 +29,15 @@ class TransactionController extends Controller
     // Log a transaction
     public function logTransaction(Request $request)
     {
-        $userId = $request->user()->id ?? 1;
-        $type = $request->input('type');
-        $amount = $request->input('amount');
-        $currency = $request->input('currency');
-        $status = $request->input('status');
-        $details = $request->input('details', []);
-        $this->logger->logTransaction($userId, $type, $amount, $currency, $status, $details);
+        $validated = $request->validate([
+            'type' => 'required|string',
+            'amount' => 'required|numeric',
+            'currency' => 'required|string|in:NGN,USD',
+            'status' => 'required|string',
+            'details' => 'nullable|array',
+        ]);
+        $userId = $request->user()->id;
+        $this->logger->logTransaction($userId, $validated['type'], $validated['amount'], $validated['currency'], $validated['status'], $validated['details'] ?? []);
         return response()->json(['success' => true]);
     }
 
