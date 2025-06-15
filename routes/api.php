@@ -72,9 +72,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/users', [App\Http\Controllers\UserController::class, 'index']);
     Route::get('/users/{id}', [App\Http\Controllers\UserController::class, 'show']);
     Route::post('/users/{id}/flag', [App\Http\Controllers\UserController::class, 'flag']);
+    Route::middleware('auth:sanctum')->patch('/users/{id}', [App\Http\Controllers\UserController::class, 'update']);
     // Promote/demote user (superadmin only)
     Route::middleware('auth:sanctum')->post('/users/{id}/promote', [App\Http\Controllers\UserController::class, 'promote']);
     Route::middleware('auth:sanctum')->post('/users/{id}/demote', [App\Http\Controllers\UserController::class, 'demote']);
+    // Secure user impersonation (superadmin only)
+    Route::middleware('auth:sanctum')->post('/users/{id}/impersonate', [App\Http\Controllers\UserController::class, 'impersonate']);
     // Trade Analytics
     Route::get('/analytics', [App\Http\Controllers\TransactionController::class, 'analytics']);
     // Admin/superadmin: Audit logs
