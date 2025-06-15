@@ -22,6 +22,7 @@ class AuthController extends Controller
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
+            'role' => $request->input('role', 'user'), // allow role assignment if provided (for seeding/admin)
         ]);
         $token = $user->createToken('auth_token')->plainTextToken;
         return response()->json([

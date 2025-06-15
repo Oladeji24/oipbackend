@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\KuCoinController;
 use App\Http\Controllers\DerivController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\AuditLogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -71,8 +72,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/users', [App\Http\Controllers\UserController::class, 'index']);
     Route::get('/users/{id}', [App\Http\Controllers\UserController::class, 'show']);
     Route::post('/users/{id}/flag', [App\Http\Controllers\UserController::class, 'flag']);
+    // Promote/demote user (superadmin only)
+    Route::middleware('auth:sanctum')->post('/users/{id}/promote', [App\Http\Controllers\UserController::class, 'promote']);
+    Route::middleware('auth:sanctum')->post('/users/{id}/demote', [App\Http\Controllers\UserController::class, 'demote']);
     // Trade Analytics
     Route::get('/analytics', [App\Http\Controllers\TransactionController::class, 'analytics']);
+    // Admin/superadmin: Audit logs
+    Route::middleware('auth:sanctum')->get('/audit-logs', [AuditLogController::class, 'index']);
+    Route::middleware('auth:sanctum')->post('/audit-logs', [AuditLogController::class, 'store']);
 });
 
 // Public route for getting user (for auth check)
